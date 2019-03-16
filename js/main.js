@@ -89,6 +89,12 @@ Zepto(($) => {
            console.log(`${DEBUG} handle csv works:`);
             Papa.parse(parsableObject, {
                 skipEmptyLines: true,
+                transform:function(value, column){
+                    if (column < DATE_FROM_INDEX) {
+                        return parseInt(value.trim(), 10);
+                    }
+                    return value.trim();
+                },
                 complete: (results)=>{
                     return this.handleParsedCSV(results.data);
                 }
@@ -113,13 +119,13 @@ Zepto(($) => {
                 // we need the state before we add the new record
                 let otherRows = this.result.slice(0);
                 // do find the result row for worked on ProjectID
-                let dateFrom = findValidDate(row[DATE_FROM_INDEX].trim());
+                let dateFrom = findValidDate(row[DATE_FROM_INDEX]);
                 let dateTo;
-                if (row[DATE_TO_INDEX].trim().toUpperCase() == "NULL") {
+                if (row[DATE_TO_INDEX].toUpperCase() == "NULL") {
                     dateTo = moment();
                     row[DATE_TO_INDEX] = "Now";
                 } else {
-                    dateTo = findValidDate(row[DATE_TO_INDEX].trim());
+                    dateTo = findValidDate(row[DATE_TO_INDEX]);
                 }
                 let resultRow = row.slice(0);
                 resultRow.splice(DATE_FROM_INDEX,2,dateTo.diff(dateFrom,'days'), dateFrom, dateTo);
@@ -128,7 +134,7 @@ Zepto(($) => {
                 console.error("AAAA", resultRow, otherRows);
                 otherRows.forEach((otherResultRow)=>{
                     //filter other projects
-                    if (otherResultRow[1] != resultRow[1] ||  // in diff project
+                    if (otherResultRow[1] != resultRow[1] ||  // in diffrent project
                         otherResultRow[0] != resultRow[0]     // same employee
                     ) { return; }
                     let d3 = otherResultRow[DATE_FROM_IN_RESULT_INDEX];
@@ -158,14 +164,14 @@ Zepto(($) => {
                 data:this.result,
                 colHeaders:RESULT_HEADER
             });
-            console.log(this.workedTogether);
-//             this.toggetherInfoElement.html("Days worked toggether:");
-//             this.toggetherElement.show();
-//             this.datagridOfToggetheResult = new Handsontable(this.toggetherElement.empty()[0], {
-//                 ...settings,
-//                 data:this.workedTogether,
-//                 colHeaders:TOGGETHER_HEADER
-//             });
+            console.log("RESULT days worked toggether:", this.workedTogether);
+            this.toggetherInfoElement.html("Days worked toggether:");
+            this.toggetherElement.show();
+            this.datagridOfToggetheResult = new Handsontable(this.toggetherElement.empty()[0], {
+                ...settings,
+                data:this.workedTogether,
+                colHeaders:TOGGETHER_HEADER
+            });
 
             console.log(`${DEBUG}present works:`);
         };
