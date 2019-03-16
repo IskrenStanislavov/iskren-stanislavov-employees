@@ -38,9 +38,7 @@ Zepto(($) => {
             if (!!url) {
                 this.url = url;
             }
-            this.currentData = null;
-            this.fileNameElement.html(this.initialFileName);
-            this.resultInfoElement.html(this.initialFileName);
+            this.clearGrid()
             console.log(`${DEBUG}url to be loaded for demo:`, this.url);
         };
         loadDemoDataURL() {
@@ -80,16 +78,10 @@ Zepto(($) => {
                 this.prepareResults();
                 this.presentDataToHTML();
             } else {
-                this.result = [];
-                this.resultHeader = [];
+                this.clearGrid()
             }
         };
         prepareResults() {
-            if (!this.currentData){
-                this.result = [];
-                this.resultHeader = [];
-                return;
-            }
             this.result = [];
             this.currentData.forEach((row, row_index)=>{
                 let dateFrom = findValidDate(row[2].trim());
@@ -112,7 +104,7 @@ Zepto(($) => {
                 colHeaders:this.header,
                 data:this.table,
             });
-            if (!this.result) {
+            if (!this.result.length) {
                 return;
             }
             this.resultInfoElement.html("Days worked on project:");
@@ -139,7 +131,11 @@ Zepto(($) => {
         };
 
         clearGrid() {
+            this.currentData = null;
+            this.fileNameElement.html(this.initialFileName);
+            this.resultInfoElement.html(this.initialFileName);
             $(this.gridElement).empty();
+            $(this.resultElement).empty();
         };
     };
 
