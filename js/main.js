@@ -70,20 +70,18 @@ Zepto(($) => {
         };
         handleParsedCSV = (data)=>{
             console.log(`${DEBUG} handle csv works:`);
-            this.currentData = data;
-            let shown = this.currentData;
-            this.header = this._header(shown);
-            this.table = shown;
+            this.table = data;
+            this.header = this._header(data);
             if (!this.header || this.header[0].trim()=="EmpID"){
                 this.prepareResults();
                 this.presentDataToHTML();
             } else {
-                this.clearGrid()
+                this.clearGrid();
             }
         };
         prepareResults() {
             this.result = [];
-            this.currentData.forEach((row, row_index)=>{
+            this.table.forEach((row, row_index)=>{
                 let dateFrom = findValidDate(row[2].trim());
                 let dateTo;
                 if (row[3].trim().toUpperCase() == "NULL") {
@@ -131,7 +129,7 @@ Zepto(($) => {
         };
 
         clearGrid() {
-            this.currentData = null;
+            this.table = null;
             this.fileNameElement.html(this.initialFileName);
             this.resultInfoElement.html(this.initialFileName);
             $(this.gridElement).empty();
