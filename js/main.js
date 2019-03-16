@@ -34,6 +34,7 @@ Zepto(($) => {
     
     let getOverlapDays = (m1, m2, m3, m4)=>{
         if ( m1.diff(m4, 'days') <= 0 && m3.diff(m2, 'days') <= 0){
+            console.error(m1, m2, m3, m4, m1.diff(m4, 'days'), m3.diff(m2, 'days'));
             let earlyEdge, laterEdge;
             if (m1.diff(m3, 'days') >= 0) {
                 earlyEdge = m1;
@@ -90,10 +91,13 @@ Zepto(($) => {
             Papa.parse(parsableObject, {
                 skipEmptyLines: true,
                 transform:function(value, column){
-                    if (column < DATE_FROM_INDEX) {
-                        return parseInt(value.trim(), 10);
+                    value = value.trim();
+                    if (HEADER.indexOf(value)>=0 || column >= DATE_FROM_INDEX){
+                        //don't parse header values
+                        //don't parse date fields
+                        return value;
                     }
-                    return value.trim();
+                    return parseInt(value, 10);
                 },
                 complete: (results)=>{
                     return this.handleParsedCSV(results.data);
@@ -104,7 +108,7 @@ Zepto(($) => {
             console.log(`${DEBUG} handle csv works:`);
             this.table = data;
             this.header = this._header(data);
-            if (!this.header || this.header[0].trim()=="EmpID"){
+            if (!this.header || this.header[0]=="EmpID"){
                 this.prepareResults();
                 this.presentDataToHTML();
             } else {
@@ -131,16 +135,14 @@ Zepto(($) => {
                 resultRow.splice(DATE_FROM_INDEX,2,dateTo.diff(dateFrom,'days'), dateFrom, dateTo);
                 this.result.push(resultRow);
                 // workedTogether
-                console.error("AAAA", resultRow, otherRows);
                 otherRows.forEach((otherResultRow)=>{
                     //filter other projects
                     if (otherResultRow[1] != resultRow[1] ||  // in diffrent project
-                        otherResultRow[0] != resultRow[0]     // same employee
+                        otherResultRow[0] == resultRow[0]     // same employee
                     ) { return; }
                     let d3 = otherResultRow[DATE_FROM_IN_RESULT_INDEX];
                     let d4 = otherResultRow[DATE_TO_IN_RESULT_INDEX];
                     let overlapDays = getOverlapDays(dateFrom, dateTo, d3, d4);
-                    console.log(overlapDays, dateFrom, dateTo, d3, d4)
                     if (overlapDays > 0) {
                         this.workedTogether.push([resultRow[0], otherResultRow[0], resultRow[1], overlapDays])
                     }
