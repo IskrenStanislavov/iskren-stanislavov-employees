@@ -48,10 +48,7 @@ Zepto(($) => {
             window.fetch(this.url).then((response) => response.blob()).then((data) => {
                 console.log(`${DEBUG}blob to be parsed:`, data);
                 this.fileNameElement.html("Demo file loaded");
-                Papa.parse(data, {
-                    // header:true,
-                    complete: this.presentDataToHTML
-                });
+                this.parseCSV(data);
             });
         };
         handleUpload() {
@@ -61,12 +58,15 @@ Zepto(($) => {
                 for (var i = 0; i < files.length; i++) {
                     if (this.files[i].presented) continue;
                     this.files[i].presented = true;
-                    Papa.parse(this.files[i], {
-                        skipEmptyLines: true,
-                        complete: that.presentDataToHTML
-                    });
+                    that.parseCSV(this.files[i]);
                 }
             }).click();
+        };
+        parseCSV(parsableObject){
+            Papa.parse(parsableObject, {
+                skipEmptyLines: true,
+                complete: this.presentDataToHTML
+            });
         };
         presentDataToHTML = (results) => {
             this.currentData = results && results.data;
