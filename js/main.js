@@ -3,6 +3,8 @@
 Zepto(($) => {
     const DEBUG = "DEBUG: ";
     const DEMO_CSV_URL = "https://raw.githubusercontent.com/IskrenStanislavov/iskren-stanislavov-employees/master/data/employee_projects_with_header.csv";
+    const HEADER = ['EmpID', 'ProjectID', 'DateFrom', 'DateTo']
+    const RESULT_HEADER = ['EmpID', 'ProjectID', 'InProj', 'DateFrom', 'DateTo']
     const INITIAL = [
         ["heading1", "heading2", "heading3", "heading4", "heading5"],
         ["value1_1", "value2_1", "value3_1", "value4_1", "value5_1"],
@@ -10,7 +12,13 @@ Zepto(($) => {
         ["value1_3", "value2_3", "value3_3", "value4_3", "value5_3"],
     ];
 
-    let settings = { licenseKey: 'non-commercial-and-evaluation' };
+    let settings = {
+        rowHeaders: true,
+        colHeaders: true,
+        filters: true,
+        dropdownMenu: true,
+        licenseKey: 'non-commercial-and-evaluation',
+    };
     let parser;
     
     let findValidDate = (dateStr) => {
@@ -39,16 +47,14 @@ Zepto(($) => {
             this.currentData = null;
             this.fileNameElement.html(this.initialFileName);
             this.resultInfoElement.html(this.initialFileName);
-            this.datagridOfFile = new Handsontable($("<div></div>").appendTo(this.gridElement)[0], settings);
-            this.datagridOfResult = new Handsontable($("<div></div>").appendTo(this.resultElement)[0], settings);
             console.log(`${DEBUG}url to be loaded for demo:`, this.url);
-            this.presentDataToHTML();
+            this.handleParsedCSV(INITIAL);
         };
         loadDemoDataURL() {
             window.fetch(this.url).then((response) => response.blob()).then((data) => {
                 console.log(`${DEBUG}blob to be parsed:`, data);
                 this.fileNameElement.html("Demo file loaded");
-                this.parseCSV(data);
+                this.launchParseProcess(data);
             });
         };
         handleUpload() {
@@ -58,45 +64,38 @@ Zepto(($) => {
                 for (var i = 0; i < files.length; i++) {
                     if (this.files[i].presented) continue;
                     this.files[i].presented = true;
-                    that.parseCSV(this.files[i]);
+                    that.launchParseProcess(this.files[i]);
                 }
             }).click();
         };
-        parseCSV(parsableObject){
+        launchParseProcess=(parsableObject)=>{
+           console.log(`${DEBUG} handle csv works:`);
             Papa.parse(parsableObject, {
                 skipEmptyLines: true,
-                complete: this.presentDataToHTML
+                complete: (results)=>{
+                    return this.handleParsedCSV(results.data);
+                }
             });
         };
-        presentDataToHTML = (results) => {
-            this.currentData = results && results.data;
-            this.datagridOfFile.loadData(this.currentData || INITIAL);
-            this.resolveResults();
-            console.log(`${DEBUG}results:`, results);
-            console.log(`${DEBUG}present works:`);
+        handleParsedCSV = (data)=>{
+            console.log(`${DEBUG} handle csv works:`);
+            this.currentData = data;
+            let shown = this.currentData || INITIAL;
+            this.header = this._header(shown);
+            this.table = shown;
+            if (this.header[0]!="EmpID"){
+                this.currentData = []
+            }
+            this.prepareResults();
+            this.presentDataToHTML();
         };
-        getHeader(){
+        prepareResults() {
             if (!this.currentData){
+                this.results = [];
+                this.resultHeader = [];
                 return;
             }
-            let row = this.currentData[0];
-            for(let i=0; i < row.length; i++){
-                if (isNaN(parseInt(row[i]))) {
-                    // means it is a title cell
-                    // by same check can be removed any header rows
-                    // in the csv file between the first and the last row
-                    return this.currentData.splice(0,1)[0];
-                }
-            }
-            return ['EmpID', 'ProjectID', 'DateFrom', 'DateTo'];
-        }
-        resolveResults() {
-            if (!this.currentData){
-                return;
-            }
-            let header = this.getHeader();
-            header.splice(2,0,"InProj");
-            let result = [header,];
+            this.result = [];
             this.currentData.forEach((row, row_index)=>{
                 let dateFrom = findValidDate(row[2].trim());
                 let dateTo;
@@ -108,14 +107,39 @@ Zepto(($) => {
                 }
                 let newRow = row.slice(0);
                 newRow.splice(2,0,dateTo.diff(dateFrom,'days'))
-                result.push(newRow);
-//                 row.splice(2,2, dateFrom, dateTo);
+                this.result.push(newRow);
+            });
+            console.log(`${DEBUG}results:`, this.results);
+        }
+        presentDataToHTML() {
+            this.datagridOfFile = new Handsontable(this.gridElement.empty()[0], {
+                ...settings,
+                colHeaders:this.header,
+                data:this.table,
             });
             this.resultInfoElement.html("Days worked on project:");
             this.resultElement.show();
-            this.datagridOfResult.loadData(result);
-            console.log(this.currentData);
-        }
+            this.datagridOfResult = new Handsontable(this.resultElement.empty()[0], {
+                ...settings,
+                data:this.result,
+                colHeaders:RESULT_HEADER
+            });
+
+            console.log(`${DEBUG}present works:`);
+        };
+        _header(data){
+            let row = data[0];
+            for(let i=0; i < row.length; i++){
+                if (isNaN(parseInt(row[i]))) {
+                    // means it is a title cell
+                    // by same check can be removed any header rows
+                    // in the csv file between the first and the last row
+                    return data.splice(0,1)[0];
+                }
+            }
+            return HEADER;
+        };
+
         clearGrid() {
             $(this.gridElement).empty();
         };
