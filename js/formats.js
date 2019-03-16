@@ -29,9 +29,9 @@ const FORMATS_MORE = [
 ];
 
 let variations = [];
-SEPARATORS.forEach((sep)=>{
-    FORMATS_MORE.forEach((fmt)=>{
-       variations.push(fmt.replaceAll('*', sep));
+SEPARATORS.forEach((sep) => {
+    FORMATS_MORE.forEach((fmt) => {
+        variations.push(fmt.replaceAll('*', sep));
     });
 });
 const FORMATS = variations.slice(0);

@@ -21,19 +21,19 @@ Zepto(($) => {
         licenseKey: 'non-commercial-and-evaluation',
     };
     let solver;
-    
+
     let findValidDate = (dateStr) => {
         let date = moment(dateStr, moment.ISO_8601);
-        if(!date._isValid) {
+        if (!date._isValid) {
             date = moment(dateStr, FORMATS, true);
         }
         return date;
 
     };
     assert(findValidDate("2014/01/05")._isValid);
-    
-    let getOverlapDays = (m1, m2, m3, m4)=>{
-        if ( m1.diff(m4, 'days') <= 0 && m3.diff(m2, 'days') <= 0){
+
+    let getOverlapDays = (m1, m2, m3, m4) => {
+        if (m1.diff(m4, 'days') <= 0 && m3.diff(m2, 'days') <= 0) {
             let earlyEdge, laterEdge;
             if (m1.diff(m3, 'days') >= 0) {
                 earlyEdge = m1;
@@ -85,29 +85,29 @@ Zepto(($) => {
                 }
             }).click();
         };
-        launchParseProcess=(parsableObject)=>{
-           console.log(`${DEBUG} handle csv works:`);
+        launchParseProcess = (parsableObject) => {
+            console.log(`${DEBUG} handle csv works:`);
             Papa.parse(parsableObject, {
                 skipEmptyLines: true,
-                transform:function(value, column){
+                transform: function (value, column) {
                     value = value.trim();
-                    if (HEADER.indexOf(value)>=0 || column >= DATE_FROM_INDEX){
+                    if (HEADER.indexOf(value) >= 0 || column >= DATE_FROM_INDEX) {
                         //don't parse header values
                         //don't parse date fields
                         return value;
                     }
                     return parseInt(value, 10);
                 },
-                complete: (results)=>{
+                complete: (results) => {
                     return this.handleParsedCSV(results.data);
                 }
             });
         };
-        handleParsedCSV = (data)=>{
+        handleParsedCSV = (data) => {
             console.log(`${DEBUG} handle csv works:`);
             this.table = data;
             this.header = this._header(data);
-            if (!this.header || this.header[0]=="EmpID"){
+            if (!this.header || this.header[0] == "EmpID") {
                 this.prepareResults();
                 this.presentDataToHTML();
             } else {
@@ -117,7 +117,7 @@ Zepto(($) => {
         prepareResults() {
             this.result = [];
             this.workedTogether = [];
-            this.table.forEach((row, row_index)=>{
+            this.table.forEach((row, row_index) => {
                 // for workedTogether
                 // we need the state before we add the new record
                 let otherRows = this.result.slice(0);
@@ -131,10 +131,10 @@ Zepto(($) => {
                     dateTo = findValidDate(row[DATE_TO_INDEX]);
                 }
                 let resultRow = row.slice(0);
-                resultRow.splice(DATE_FROM_INDEX,2,dateTo.diff(dateFrom,'days'), dateFrom, dateTo);
+                resultRow.splice(DATE_FROM_INDEX, 2, dateTo.diff(dateFrom, 'days'), dateFrom, dateTo);
                 this.result.push(resultRow);
                 // workedTogether
-                otherRows.forEach((otherResultRow)=>{
+                otherRows.forEach((otherResultRow) => {
                     //filter other projects
                     if (otherResultRow[1] != resultRow[1] ||  // in diffrent project
                         otherResultRow[0] == resultRow[0]     // same employee
@@ -152,8 +152,8 @@ Zepto(($) => {
         presentDataToHTML() {
             this.datagridOfFile = new Handsontable(this.gridElement.empty()[0], {
                 ...settings,
-                colHeaders:this.header,
-                data:this.table,
+                colHeaders: this.header,
+                data: this.table,
             });
             if (!this.result.length) {
                 return;
@@ -162,28 +162,28 @@ Zepto(($) => {
             this.resultElement.show();
             this.datagridOfResult = new Handsontable(this.resultElement.empty()[0], {
                 ...settings,
-                data:this.result,
-                colHeaders:RESULT_HEADER
+                data: this.result,
+                colHeaders: RESULT_HEADER
             });
             console.log("RESULT days worked toggether:", this.workedTogether);
             this.toggetherInfoElement.html("Days worked toggether:");
             this.toggetherElement.show();
             this.datagridOfToggetheResult = new Handsontable(this.toggetherElement.empty()[0], {
                 ...settings,
-                data:this.workedTogether,
-                colHeaders:TOGGETHER_HEADER
+                data: this.workedTogether,
+                colHeaders: TOGGETHER_HEADER
             });
 
             console.log(`${DEBUG}present works:`);
         };
-        _header(data){
+        _header(data) {
             let row = data[0];
-            for(let i=0; i < row.length; i++){
+            for (let i = 0; i < row.length; i++) {
                 if (isNaN(parseInt(row[i]))) {
                     // means it is a title cell
                     // by same check can be removed any header rows
                     // in the csv file between the first and the last row
-                    return data.splice(0,1)[0];
+                    return data.splice(0, 1)[0];
                 }
             }
             return HEADER;
