@@ -5,12 +5,6 @@ Zepto(($) => {
     const DEMO_CSV_URL = "https://raw.githubusercontent.com/IskrenStanislavov/iskren-stanislavov-employees/master/data/employee_projects_with_header.csv";
     const HEADER = ['EmpID', 'ProjectID', 'DateFrom', 'DateTo']
     const RESULT_HEADER = ['EmpID', 'ProjectID', 'InProj', 'DateFrom', 'DateTo']
-    const INITIAL = [
-        ["heading1", "heading2", "heading3", "heading4", "heading5"],
-        ["value1_1", "value2_1", "value3_1", "value4_1", "value5_1"],
-        ["value1_2", "value2_2", "value3_2", "value4_2", "value5_2"],
-        ["value1_3", "value2_3", "value3_3", "value4_3", "value5_3"],
-    ];
 
     let settings = {
         rowHeaders: true,
@@ -48,7 +42,6 @@ Zepto(($) => {
             this.fileNameElement.html(this.initialFileName);
             this.resultInfoElement.html(this.initialFileName);
             console.log(`${DEBUG}url to be loaded for demo:`, this.url);
-            this.handleParsedCSV(INITIAL);
         };
         loadDemoDataURL() {
             window.fetch(this.url).then((response) => response.blob()).then((data) => {
