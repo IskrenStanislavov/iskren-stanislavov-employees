@@ -80,18 +80,20 @@ Zepto(($) => {
         handleParsedCSV = (data)=>{
             console.log(`${DEBUG} handle csv works:`);
             this.currentData = data;
-            let shown = this.currentData || INITIAL;
+            let shown = this.currentData;
             this.header = this._header(shown);
             this.table = shown;
-            if (this.header[0]!="EmpID"){
-                this.currentData = []
+            if (!this.header || this.header[0].trim()=="EmpID"){
+                this.prepareResults();
+                this.presentDataToHTML();
+            } else {
+                this.result = [];
+                this.resultHeader = [];
             }
-            this.prepareResults();
-            this.presentDataToHTML();
         };
         prepareResults() {
             if (!this.currentData){
-                this.results = [];
+                this.result = [];
                 this.resultHeader = [];
                 return;
             }
@@ -109,7 +111,7 @@ Zepto(($) => {
                 newRow.splice(2,0,dateTo.diff(dateFrom,'days'))
                 this.result.push(newRow);
             });
-            console.log(`${DEBUG}results:`, this.results);
+            console.log(`${DEBUG}results:`, this.result);
         }
         presentDataToHTML() {
             this.datagridOfFile = new Handsontable(this.gridElement.empty()[0], {
@@ -117,6 +119,9 @@ Zepto(($) => {
                 colHeaders:this.header,
                 data:this.table,
             });
+            if (!this.result) {
+                return;
+            }
             this.resultInfoElement.html("Days worked on project:");
             this.resultElement.show();
             this.datagridOfResult = new Handsontable(this.resultElement.empty()[0], {
