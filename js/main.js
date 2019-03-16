@@ -3,8 +3,15 @@
 Zepto(($) => {
     const DEBUG = "DEBUG: ";
     const DEMO_CSV_URL = "https://raw.githubusercontent.com/IskrenStanislavov/iskren-stanislavov-employees/master/data/employee_projects_with_header.csv";
-    const HEADER = ['EmpID', 'ProjectID', 'DateFrom', 'DateTo']
-    const RESULT_HEADER = ['EmpID', 'ProjectID', 'InProj', 'DateFrom', 'DateTo']
+    const HEADER = ['EmpID', 'ProjectID', 'DateFrom', 'DateTo'];
+    const RESULT_HEADER = ['EmpID', 'ProjectID', 'InProj', 'DateFrom', 'DateTo'];
+    const TOGGETHER_HEADER = ['Emp1ID', 'Emp2ID', 'ProjectID', 'DaysTogg'];
+
+    const DATE_FROM_INDEX = HEADER.indexOf('DateFrom');
+    const DATE_TO_INDEX = HEADER.indexOf('DateTo');
+
+    const DATE_FROM_IN_RESULT_INDEX = RESULT_HEADER.indexOf('DateFrom');
+    const DATE_TO_IN_RESULT_INDEX = RESULT_HEADER.indexOf('DateTo');
 
     let settings = {
         rowHeaders: true,
@@ -13,27 +20,46 @@ Zepto(($) => {
         dropdownMenu: true,
         licenseKey: 'non-commercial-and-evaluation',
     };
-    let parser;
+    let solver;
     
     let findValidDate = (dateStr) => {
         let date = moment(dateStr, moment.ISO_8601);
         if(!date._isValid) {
             date = moment(dateStr, FORMATS, true);
-            console.log("in 3");
         }
         return date;
 
     };
     assert(findValidDate("2014/01/05")._isValid);
+    
+    let getOverlapDays = (m1, m2, m3, m4)=>{
+        if ( m1.diff(m4, 'days') <= 0 && m3.diff(m2, 'days') <= 0){
+            let earlyEdge, laterEdge;
+            if (m1.diff(m3, 'days') >= 0) {
+                earlyEdge = m1;
+            } else {
+                earlyEdge = m3;
+            }
+            if (m4.diff(m2, 'days') >= 0) {
+                laterEdge = m4;
+            } else {
+                laterEdge = m2;
+            }
 
+            return laterEdge.diff(earlyEdge, 'days');
+        }
+        return 0;
+    };
     console.log(`${DEBUG}document loaded.`);
-    class Parser {
+    class ProblemSolver {
         url = DEMO_CSV_URL;
         initialFileName = 'no file selected';
         gridElement = $("#demo");
         fileNameElement = $("#file-selected-name");
         resultElement = $("#results-demo").hide();
         resultInfoElement = $("#results-info");
+        toggetherElement = $("#toggether-demo").hide();
+        toggetherInfoElement = $("#toggether-info");
         constructor(url) {
             if (!!url) {
                 this.url = url;
@@ -81,18 +107,38 @@ Zepto(($) => {
         };
         prepareResults() {
             this.result = [];
+            this.workedTogether = [];
             this.table.forEach((row, row_index)=>{
-                let dateFrom = findValidDate(row[2].trim());
+                // for workedTogether
+                // we need the state before we add the new record
+                let otherRows = this.result.slice(0);
+                // do find the result row for worked on ProjectID
+                let dateFrom = findValidDate(row[DATE_FROM_INDEX].trim());
                 let dateTo;
-                if (row[3].trim().toUpperCase() == "NULL") {
+                if (row[DATE_TO_INDEX].trim().toUpperCase() == "NULL") {
                     dateTo = moment();
-                    row[3] = "Now";
+                    row[DATE_TO_INDEX] = "Now";
                 } else {
-                    dateTo = findValidDate(row[3].trim());
+                    dateTo = findValidDate(row[DATE_TO_INDEX].trim());
                 }
-                let newRow = row.slice(0);
-                newRow.splice(2,0,dateTo.diff(dateFrom,'days'))
-                this.result.push(newRow);
+                let resultRow = row.slice(0);
+                resultRow.splice(DATE_FROM_INDEX,2,dateTo.diff(dateFrom,'days'), dateFrom, dateTo);
+                this.result.push(resultRow);
+                // workedTogether
+                console.error("AAAA", resultRow, otherRows);
+                otherRows.forEach((otherResultRow)=>{
+                    //filter other projects
+                    if (otherResultRow[1] != resultRow[1] ||  // in diff project
+                        otherResultRow[0] != resultRow[0]     // same employee
+                    ) { return; }
+                    let d3 = otherResultRow[DATE_FROM_IN_RESULT_INDEX];
+                    let d4 = otherResultRow[DATE_TO_IN_RESULT_INDEX];
+                    let overlapDays = getOverlapDays(dateFrom, dateTo, d3, d4);
+                    console.log(overlapDays, dateFrom, dateTo, d3, d4)
+                    if (overlapDays > 0) {
+                        this.workedTogether.push([resultRow[0], otherResultRow[0], resultRow[1], overlapDays])
+                    }
+                });
             });
             console.log(`${DEBUG}results:`, this.result);
         }
@@ -112,6 +158,14 @@ Zepto(($) => {
                 data:this.result,
                 colHeaders:RESULT_HEADER
             });
+            console.log(this.workedTogether);
+//             this.toggetherInfoElement.html("Days worked toggether:");
+//             this.toggetherElement.show();
+//             this.datagridOfToggetheResult = new Handsontable(this.toggetherElement.empty()[0], {
+//                 ...settings,
+//                 data:this.workedTogether,
+//                 colHeaders:TOGGETHER_HEADER
+//             });
 
             console.log(`${DEBUG}present works:`);
         };
@@ -134,17 +188,18 @@ Zepto(($) => {
             this.resultInfoElement.html(this.initialFileName);
             $(this.gridElement).empty();
             $(this.resultElement).empty();
+            $(this.toggetherElement).empty();
         };
     };
 
-    parser = new Parser();
+    solver = new ProblemSolver();
     $("#load-demo").on("click", () => {
-        parser.loadDemoDataURL();
+        solver.loadDemoDataURL();
     });
     $("#clear").on("click", () => {
-        parser.clearGrid();
+        solver.clearGrid();
     });
     $("#select").on("click", () => {
-        parser.handleUpload();
+        solver.handleUpload();
     });
 });
