@@ -4,7 +4,7 @@ Zepto(($) => {
     const DEBUG = "DEBUG: ";
     const DEMO_CSV_URL = "https://raw.githubusercontent.com/IskrenStanislavov/iskren-stanislavov-employees/master/data/employee_projects_with_header.csv";
     const HEADER = ['EmpID', 'ProjectID', 'DateFrom', 'DateTo'];
-    const RESULT_HEADER = ['EmpID', 'ProjectID', 'InProj', 'DateFrom', 'DateTo'];
+    const RESULT_HEADER = ['EmpID', 'ProjectID', 'DaysInProj', 'DateFrom', 'DateTo'];
     const TOGGETHER_HEADER = ['Emp1ID', 'Emp2ID', 'ProjectID', 'DaysTogg'];
 
     const DATE_FROM_INDEX = HEADER.indexOf('DateFrom');
@@ -34,7 +34,6 @@ Zepto(($) => {
     
     let getOverlapDays = (m1, m2, m3, m4)=>{
         if ( m1.diff(m4, 'days') <= 0 && m3.diff(m2, 'days') <= 0){
-            console.error(m1, m2, m3, m4, m1.diff(m4, 'days'), m3.diff(m2, 'days'));
             let earlyEdge, laterEdge;
             if (m1.diff(m3, 'days') >= 0) {
                 earlyEdge = m1;
@@ -42,9 +41,9 @@ Zepto(($) => {
                 earlyEdge = m3;
             }
             if (m4.diff(m2, 'days') >= 0) {
-                laterEdge = m4;
-            } else {
                 laterEdge = m2;
+            } else {
+                laterEdge = m4;
             }
 
             return laterEdge.diff(earlyEdge, 'days');
