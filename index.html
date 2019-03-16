@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html>
     <script type="text/javascript" charset="utf-8" src="js/lib/zepto.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/lib/papaparse.min.js"></script>
     <script type="text/javascript" charset="utf-8" src="js/parsers/csv-parser.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/main.js"></script>
 <body>
 
 <p>Click the button to change string.</p>
 
-<button onclick="myFunction()">Try it</button>
+<button id="load-demo">Demo</button>
 
+<button id="select">Select .csv</button>
+<input id="file-input" type="file" style="display: none;" accept=".csv,.x-csv,text/csv,text/comma-separated-values,text/x-comma-separated-values,text/tab-separated-values"/>
 <p id="demo"></p>
 
 </body>
