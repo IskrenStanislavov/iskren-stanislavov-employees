@@ -1,18 +1,29 @@
 <!DOCTYPE html>
 <html>
+    <link href="https://cdn.jsdelivr.net/npm/handsontable@7.0.0/dist/handsontable.full.min.css" rel="stylesheet" media="screen">
+
     <script type="text/javascript" charset="utf-8" src="js/lib/zepto.min.js"></script>
     <script type="text/javascript" charset="utf-8" src="js/lib/papaparse.min.js"></script>
     <script type="text/javascript" charset="utf-8" src="js/parsers/csv-parser.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handsontable@7.0.0/dist/handsontable.full.min.js"></script>
     <script type="text/javascript" charset="utf-8" src="js/main.js"></script>
 <body>
 
 <p>Click the button to change string.</p>
 
-<button id="load-demo">Demo</button>
+<button id="load-demo">Load Demo</button>
 
 <button id="select">Select .csv</button>
+<button id="clear">Clear</button>
 <input id="file-input" type="file" style="display: none;" accept=".csv,.x-csv"/>
+
+<h3 id="file-selected-title">Data for handling</h3>
+<p id="file-selected-name">file name appears here</p>
 <p id="demo"></p>
+
+<h3 id="results-title">Results</h3>
+<p id="results-info">some info about results</p>
+<p id="results-demo"></p>
 
 </body>
 </html>
