@@ -75,38 +75,43 @@ Zepto(($) => {
             console.log(`${DEBUG}results:`, results);
             console.log(`${DEBUG}present works:`);
         };
-        truncateHeader(){
+        getHeader(){
             if (!this.currentData){
                 return;
             }
-            if (
-                this.currentData.indexOf('EmpID') ||
-                this.currentData.indexOf('ProjectID') ||
-                this.currentData.indexOf('DateFrom') ||
-                this.currentData.indexOf('DateFromTo')
-            ){
-                this.currentData.splice(0,1)
+            let row = this.currentData[0];
+            for(let i=0; i < row.length; i++){
+                if (isNaN(parseInt(row[i]))) {
+                    // means it is a title cell
+                    // by same check can be removed any header rows
+                    // in the csv file between the first and the last row
+                    return this.currentData.splice(0,1)[0];
+                }
             }
-
+            return ['EmpID', 'ProjectID', 'DateFrom', 'DateTo'];
         }
         resolveResults() {
             if (!this.currentData){
                 return;
             }
-            this.truncateHeader();
-            let result = [];
+            let header = this.getHeader();
+            header.splice(2,0,"InProj");
+            let result = [header,];
             this.currentData.forEach((row, row_index)=>{
                 let dateFrom = findValidDate(row[2].trim());
                 let dateTo;
                 if (row[3].trim().toUpperCase() == "NULL") {
                     dateTo = moment();
+                    row[3] = "Now";
                 } else {
                     dateTo = findValidDate(row[3].trim());
                 }
-                result.push(row.slice(0,2).concat([dateFrom, dateTo]));
+                let newRow = row.slice(0);
+                newRow.splice(2,0,dateTo.diff(dateFrom,'days'))
+                result.push(newRow);
 //                 row.splice(2,2, dateFrom, dateTo);
             });
-            this.resultInfoElement.html("Result:");
+            this.resultInfoElement.html("Days worked on project:");
             this.resultElement.show();
             this.datagridOfResult.loadData(result);
             console.log(this.currentData);
