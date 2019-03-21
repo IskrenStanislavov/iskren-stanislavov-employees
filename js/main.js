@@ -143,7 +143,14 @@ Zepto(($) => {
                     let d4 = otherResultRow[DATE_TO_IN_RESULT_INDEX];
                     let overlapData = getOverlapDays(dateFrom, dateTo, d3, d4);
                     if (overlapData.days > 0) {
-                        this.workedTogether.push([resultRow[0], otherResultRow[0], resultRow[1], overlapData.days, overlapData.start._i, overlapData.end._i])
+                        this.workedTogether.push([
+                            resultRow[0], //Employee 1 ID
+                            otherResultRow[0], //Employee 2 ID
+                            resultRow[1], //ProjectID
+                            overlapData.days, // days worked together on project
+                            overlapData.start.creationData().input, // DateFrom
+                            overlapData.end.creationData().input // DateTo
+                        ]);
                     }
                 });
             });
