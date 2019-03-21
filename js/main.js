@@ -5,7 +5,7 @@ Zepto(($) => {
     const DEMO_CSV_URL = "https://raw.githubusercontent.com/IskrenStanislavov/iskren-stanislavov-employees/master/data/employee_projects_with_header.csv";
     const HEADER = ['EmpID', 'ProjectID', 'DateFrom', 'DateTo'];
     const RESULT_HEADER = ['EmpID', 'ProjectID', 'DaysInProj', 'DateFrom', 'DateTo'];
-    const TOGGETHER_HEADER = ['Emp1ID', 'Emp2ID', 'ProjectID', 'DaysTogg'];
+    const TOGGETHER_HEADER = ['Emp1ID', 'Emp2ID', 'ProjectID', 'DaysTogg', 'DateFrom', 'DateTo'];
 
     const DATE_FROM_INDEX = HEADER.indexOf('DateFrom');
     const DATE_TO_INDEX = HEADER.indexOf('DateTo');
@@ -46,9 +46,9 @@ Zepto(($) => {
                 laterEdge = m4;
             }
 
-            return laterEdge.diff(earlyEdge, 'days');
+            return {days: laterEdge.diff(earlyEdge, 'days'), start:earlyEdge, end:laterEdge };
         }
-        return 0;
+        return {days: 0};
     };
     console.log(`${DEBUG}document loaded.`);
     class ProblemSolver {
@@ -56,8 +56,8 @@ Zepto(($) => {
         initialFileName = 'no file selected';
         gridElement = $("#demo");
         fileNameElement = $("#file-selected-name");
-        resultElement = $("#results-demo").hide();
-        resultInfoElement = $("#results-info");
+//         resultElement = $("#results-demo").hide();
+//         resultInfoElement = $("#results-info");
         toggetherElement = $("#toggether-demo").hide();
         toggetherInfoElement = $("#toggether-info");
         constructor(url) {
@@ -141,9 +141,9 @@ Zepto(($) => {
                     ) { return; }
                     let d3 = otherResultRow[DATE_FROM_IN_RESULT_INDEX];
                     let d4 = otherResultRow[DATE_TO_IN_RESULT_INDEX];
-                    let overlapDays = getOverlapDays(dateFrom, dateTo, d3, d4);
-                    if (overlapDays > 0) {
-                        this.workedTogether.push([resultRow[0], otherResultRow[0], resultRow[1], overlapDays])
+                    let overlapData = getOverlapDays(dateFrom, dateTo, d3, d4);
+                    if (overlapData.days > 0) {
+                        this.workedTogether.push([resultRow[0], otherResultRow[0], resultRow[1], overlapData.days, overlapData.start._i, overlapData.end._i])
                     }
                 });
             });
@@ -158,20 +158,27 @@ Zepto(($) => {
             if (!this.result.length) {
                 return;
             }
-            this.resultInfoElement.html("Days worked on project:");
-            this.resultElement.show();
-            this.datagridOfResult = new Handsontable(this.resultElement.empty()[0], {
-                ...settings,
-                data: this.result,
-                colHeaders: RESULT_HEADER
-            });
+//             this.resultInfoElement.html("Days worked on project:");
+//             this.resultElement.show();
+//             this.datagridOfResult = new Handsontable(this.resultElement.empty()[0], {
+//                 ...settings,
+//                 data: this.result,
+//                 colHeaders: RESULT_HEADER
+//             });
             console.log("RESULT days worked toggether:", this.workedTogether);
             this.toggetherInfoElement.html("Days worked toggether:");
             this.toggetherElement.show();
             this.datagridOfToggetheResult = new Handsontable(this.toggetherElement.empty()[0], {
                 ...settings,
                 data: this.workedTogether,
-                colHeaders: TOGGETHER_HEADER
+                colHeaders: TOGGETHER_HEADER,
+                columnSorting: {
+                    sortEmptyCells: false,
+                    initialConfig: {
+                      column: 3,
+                      sortOrder: 'desc'
+                    }
+                }
             });
 
             console.log(`${DEBUG}present works:`);
@@ -192,9 +199,9 @@ Zepto(($) => {
         clearGrid() {
             this.table = null;
             this.fileNameElement.html(this.initialFileName);
-            this.resultInfoElement.html(this.initialFileName);
+//             this.resultInfoElement.html(this.initialFileName);
             $(this.gridElement).empty();
-            $(this.resultElement).empty();
+//             $(this.resultElement).empty();
             $(this.toggetherElement).empty();
         };
     };
