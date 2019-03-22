@@ -115,6 +115,8 @@ Zepto(($) => {
             }
         };
         prepareResults() {
+            this.longerDaysWorkedTogether = 0;
+            this.recordForTheResult = null;
             this.result = [];
             this.workedTogether = [];
             this.table.forEach((row, row_index) => {
@@ -143,14 +145,19 @@ Zepto(($) => {
                     let d4 = otherResultRow[DATE_TO_IN_RESULT_INDEX];
                     let overlapData = getOverlapDays(dateFrom, dateTo, d3, d4);
                     if (overlapData.days > 0) {
-                        this.workedTogether.push([
+                        let currentRecord = [
                             resultRow[0], //Employee 1 ID
                             otherResultRow[0], //Employee 2 ID
                             resultRow[1], //ProjectID
                             overlapData.days, // days worked together on project
                             overlapData.start.creationData().input, // DateFrom
                             overlapData.end.creationData().input // DateTo
-                        ]);
+                        ];
+                        this.workedTogether.push(currentRecord);
+                        if (overlapData.days > this.longerDaysWorkedTogether) {
+                            this.longerDaysWorkedTogether = overlapData.days;
+                            this.recordForTheResult = currentRecord;
+                        }
                     }
                 });
             });
@@ -172,7 +179,15 @@ Zepto(($) => {
 //                 data: this.result,
 //                 colHeaders: RESULT_HEADER
 //             });
-            console.log("RESULT days worked toggether:", this.workedTogether);
+            console.log(
+                "RESULT: days:", this.longerDaysWorkedTogether,
+                "Employees", this.recordForTheResult.slice(0, 2).toString(),
+                'project', this.recordForTheResult[3].toString()
+            );
+            console.log(
+                "Note: If there are more than one couple with the same days,",
+                "please check the data presented in #together-demo"
+            );
             this.toggetherInfoElement.html("Days worked toggether:");
             this.toggetherElement.show();
             this.datagridOfToggetheResult = new Handsontable(this.toggetherElement.empty()[0], {
@@ -188,7 +203,7 @@ Zepto(($) => {
                 }
             });
 
-            console.log(`${DEBUG}present works:`);
+            // console.log(`${DEBUG}present works:`);
         };
         _header(data) {
             let row = data[0];
