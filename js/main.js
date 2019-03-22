@@ -179,10 +179,12 @@ Zepto(($) => {
 //                 data: this.result,
 //                 colHeaders: RESULT_HEADER
 //             });
-            console.log(
-                "RESULT: days:", this.longerDaysWorkedTogether,
-                "Employees", this.recordForTheResult.slice(0, 2).toString(),
-                'project', this.recordForTheResult[3].toString()
+            console.log("RESULT: \n\t\t", 
+                "The employees that worked together on a common project for the longest period of",
+                
+                this.longerDaysWorkedTogether + " days are those with IDs: ",
+                "еmployees:", this.recordForTheResult.slice(0, 2).toString(),
+                'in project with ID:', this.recordForTheResult[3].toString()
             );
             console.log(
                 "Note: If there are more than one couple with the same days,",
